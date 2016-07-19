@@ -1,4 +1,4 @@
-#!/user/bin/python2
+#!/usr/bin/python2
 from Tkinter import *
 from PIL import Image
 from PIL import ImageTk
@@ -52,8 +52,8 @@ class App:
         self.reset_btn = Button(text='Reset', command=self.reset_values)
         self.reset_btn.grid(row=1,column=1)
 
-        self.save_btn = Button(text='Save', command=self.save_values)
-        self.save_btn.grid(row=2, column=1)
+        self.print_btn = Button(text='Print', command=self.print_values)
+        self.print_btn.grid(row=2, column=1)
 
         self.reds = Button(text="Reds", fg='red', command=self.preset_r)
         self.reds.grid(row=3, column=1)
@@ -79,7 +79,17 @@ class App:
     def open_file(self):
         global once
         once = True
-        self.img_path = tkFileDialog.askopenfilename()
+        img_file = tkFileDialog.askopenfilename()
+        # this makes sure you select a file
+        # otherwise program crashes if not
+        if img_file  != '':
+            self.img_path = img_file 
+            # this just makes sure the image shows up after opening it
+            self.low_hue.set(1)
+            self.low_hue.set(0)
+        else:
+            print('picked nothing')
+            return 0
 
     def preset_r(self, *args):
         self.low_hue.set(0)
@@ -183,7 +193,7 @@ class App:
         self.high_sat.set(255)
         self.high_val.set(255)
 
-    def save_values(self):
+    def print_values(self):
         """Does NOT actually save, just prints, for now"""
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
