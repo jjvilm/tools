@@ -6,7 +6,10 @@ import tkFileDialog
 import time
 import cv2
 import numpy as np
+
+
 once = True
+img_screenshot = None
 
 class App:
     
@@ -68,13 +71,16 @@ class App:
         self.open_btn = Button(text="Open", command=self.open_file)
         self.open_btn.grid(row=6, column=1)
 
+        # Screenshot
+        self.screenshot_btn = Button(text="Screenshot", command=self.take_screenshot)
+        self.screenshot_btn.grid(row=7, column=1)
 
 ##########################################################################################################
-        self.imglbl = Label(text="HSV", image=None)
-        self.imglbl.grid(row=0, column=0)
+        self.hsv_img_lbl = Label(text="HSV", image=None)
+        self.hsv_img_lbl.grid(row=0, column=0)
 
-        self.imglbl2 = Label(text='Original',image=None)
-        self.imglbl2.grid(row=0, column=1)
+        self.original_img_lbl = Label(text='Original',image=None)
+        self.original_img_lbl.grid(row=0, column=1)
 ##########################################################################################################
     def open_file(self):
         global once
@@ -117,10 +123,11 @@ class App:
         self.high_val.set(255)
 
     def show_changes(self, *args):
-        global once
+        global once, img_screenshot
 
         if self.img_path == None:
             return 0
+
         # gets the values from the sliders
         # low blue, green, red
         low_hue = self.low_hue.get()
@@ -134,10 +141,16 @@ class App:
         if low_val > high_val or low_sat > high_sat or low_hue > high_hue:
             return 0
 
-        #img_path = 'objects.png'
-        # loaded as BGR 
-        img_a = cv2.imread(self.img_path,1)
-        img_b = cv2.imread(self.img_path,1)
+        # gets screenshot
+        if self.img_path != 'screenshot':
+            #img_path = 'objects.png'
+            # loaded as BGR 
+            img_a = cv2.imread(self.img_path,1)
+            img_b = img_a.copy()
+        else:
+            img_a = img_screenshot
+            img_b = img_screenshot.copy()
+
         if once: 
             # OpenCV represetns images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels
@@ -148,9 +161,9 @@ class App:
             # convert to ImageTk format
             imgO = ImageTk.PhotoImage(imgO)
             # update the original image label
-            self.imglbl2.configure(image=imgO)
+            self.original_img_lbl.configure(image=imgO)
             # Keeping a reference! b/ need to! 
-            self.imglbl2.image = imgO
+            self.original_img_lbl.image = imgO
             once = False
 
 
@@ -180,9 +193,9 @@ class App:
         # convertint to ImageTk format
         mask_tk = ImageTk.PhotoImage(mask_pil)
 
-        self.imglbl.configure(image=mask_tk)
+        self.hsv_img_lbl.configure(image=mask_tk)
         # adding a reference to the image to Prevent python's garbage collection from deleting it
-        self.imglbl.image = mask_tk
+        self.hsv_img_lbl.image = mask_tk
 
     def reset_values(self):
         self.low_hue.set(0)
@@ -197,6 +210,48 @@ class App:
         """Does NOT actually save, just prints, for now"""
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
+
+    def take_screenshot(self):
+        global img_screenshot
+        from subprocess import check_output
+        from pyscreenshot import grab
+
+        
+        # makes sure method 'show_changes' takes screenshot instead of img file
+        self.img_path = 'screenshot'
+        # initializes coords for screenshot
+        x1 = None
+        y1 = None
+        x2 = None
+        y2 = None
+        
+        for i in xrange(2):
+            time.sleep(3)
+            # Parses output for x and y coords
+            coords = check_output(['xdotool','getmouselocation','--shell'])
+            fo = coords.find("=")
+            so = coords.find("Y")
+            to = coords.find("S")
+
+            if i == 0:
+                x1 = int(coords[fo+1:so])
+                y1 = int(coords[so+2:to])
+            else:
+                x2 = int(coords[fo+1:so])
+                y2 = int(coords[so+2:to])
+            print("Pic taken")
+
+        screenshot = grab(bbox=(x1,y1,x2,y2))
+        screenshot = np.array(screenshot)
+        cv_img = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+
+        img_screenshot = cv_img
+
+
+
+
+
+
 
 
 root = Tk()
