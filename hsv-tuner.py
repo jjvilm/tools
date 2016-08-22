@@ -6,7 +6,8 @@ import tkFileDialog
 import time
 import cv2
 import numpy as np
-
+from subprocess import check_output
+from pyscreenshot import grab
 
 once = True
 img_screenshot = None
@@ -137,20 +138,26 @@ class App:
         high_hue = self.high_hue.get()
         high_sat = self.high_sat.get()
         high_val = self.high_val.get()
-
+        # does nothing if low values go higher than high values
         if low_val > high_val or low_sat > high_sat or low_hue > high_hue:
             return 0
-
-        # gets screenshot
+        # gets image from file
         if self.img_path != 'screenshot':
             #img_path = 'objects.png'
             # loaded as BGR 
             img_a = cv2.imread(self.img_path,1)
+            # image resized
+            img_a = cv2.resize(img_a,(300,200))
             img_b = img_a.copy()
+
+        # gets screenshot
         else:
             img_a = img_screenshot
+            # image resized
+            img_a = cv2.resize(img_a,(300,200))
             img_b = img_screenshot.copy()
 
+        # Sets the original image once, manipulates the copy in next iterations
         if once: 
             # OpenCV represetns images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels
@@ -212,9 +219,9 @@ class App:
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
 
     def take_screenshot(self):
-        global img_screenshot
-        from subprocess import check_output
-        from pyscreenshot import grab
+        global img_screenshot, once
+        # switch to always display the screenshot as original everytime
+        once = True
 
         
         # makes sure method 'show_changes' takes screenshot instead of img file
@@ -232,27 +239,24 @@ class App:
             fo = coords.find("=")
             so = coords.find("Y")
             to = coords.find("S")
-
+           # sets the first point of screenshot 
             if i == 0:
                 x1 = int(coords[fo+1:so])
                 y1 = int(coords[so+2:to])
+           # sets the second point of screenshot 
             else:
                 x2 = int(coords[fo+1:so])
                 y2 = int(coords[so+2:to])
             print("Pic taken")
-
+        # screenshot taken here with the grabbed coordinates
         screenshot = grab(bbox=(x1,y1,x2,y2))
         screenshot = np.array(screenshot)
-        cv_img = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+        # converts the PIL image format to opencv2 image format
+        img_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
 
-        img_screenshot = cv_img
-
-
-
-
-
-
-
+        # this just makes sure the image shows up after opening it
+        self.low_hue.set(1)
+        self.low_hue.set(0)
 
 root = Tk()
 app = App(root)
