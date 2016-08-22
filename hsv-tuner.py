@@ -1,5 +1,6 @@
 #!/usr/bin/python2
-from Tkinter import *
+#from Tkinter import *
+import Tkinter as tk
 from PIL import Image
 from PIL import ImageTk
 import tkFileDialog
@@ -13,74 +14,76 @@ once = True
 img_screenshot = None
 
 class App:
+    original_image = None
+    hsv_image = None
     
     def __init__(self, master):
         self.img_path = None
-        frame = Frame(master)
+        frame = tk.Frame(master)
         frame.grid()
         root.title("Sliders")
 
-        self.hue_lbl = Label(text="Hue", fg='red')
+        self.hue_lbl = tk.Label(text="Hue", fg='red')
         self.hue_lbl.grid(row=2)
 
-        self.low_hue = Scale(master, label='Low',from_=0, to=179, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.low_hue = tk.Scale(master, label='Low',from_=0, to=179, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.low_hue.grid(row=3)
 
-        self.high_hue = Scale(master,label='High', from_=0, to=179, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.high_hue = tk.Scale(master,label='High', from_=0, to=179, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.high_hue.set(179)
         self.high_hue.grid(row=4)
 ###########################################################################################################
-        self.sat_lbl = Label(text="Saturation", fg='green')
+        self.sat_lbl = tk.Label(text="Saturation", fg='green')
         self.sat_lbl.grid(row=5)
 
-        self.low_sat = Scale(master, label='Low',from_=0, to=255, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.low_sat = tk.Scale(master, label='Low',from_=0, to=255, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.low_sat.set(100)
         self.low_sat.grid(row=6)
 
-        self.high_sat = Scale(master, label="High", from_=0, to=255, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.high_sat = tk.Scale(master, label="High", from_=0, to=255, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.high_sat.set(255)
         self.high_sat.grid(row=7)
 ###########################################################################################################
-        self.val_lbl = Label(text="Value", fg='Blue')
+        self.val_lbl = tk.Label(text="Value", fg='Blue')
         self.val_lbl.grid(row=8)
 
-        self.low_val = Scale(master, label="Low",from_=0, to=255, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.low_val = tk.Scale(master, label="Low",from_=0, to=255, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.low_val.set(100)
         self.low_val.grid(row=9)
 
-        self.high_val = Scale(master, label="High",from_=0, to=255, length=500,orient=HORIZONTAL, command=self.show_changes)
+        self.high_val = tk.Scale(master, label="High",from_=0, to=255, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.high_val.set(255)
         self.high_val.grid(row=10)
 ###########################################################################################################
 # buttons
-        self.reset_btn = Button(text='Reset', command=self.reset_values)
+        self.reset_btn = tk.Button(text='Reset', command=self.reset_values)
         self.reset_btn.grid(row=1,column=1)
 
-        self.print_btn = Button(text='Print', command=self.print_values)
+        self.print_btn = tk.Button(text='Print', command=self.print_values)
         self.print_btn.grid(row=2, column=1)
 
-        self.reds = Button(text="Reds", fg='red', command=self.preset_r)
+        self.reds = tk.Button(text="Reds", fg='red', command=self.preset_r)
         self.reds.grid(row=3, column=1)
 
-        self.reds = Button(text="Greens", fg='green', command=self.preset_g)
+        self.reds = tk.Button(text="Greens", fg='green', command=self.preset_g)
         self.reds.grid(row=4, column=1)
 
-        self.reds = Button(text="Blues", fg='blue', command=self.preset_b)
+        self.reds = tk.Button(text="Blues", fg='blue', command=self.preset_b)
         self.reds.grid(row=5, column=1)
 
         # Open
-        self.open_btn = Button(text="Open", command=self.open_file)
+        self.open_btn = tk.Button(text="Open", command=self.open_file)
         self.open_btn.grid(row=6, column=1)
 
         # Screenshot
-        self.screenshot_btn = Button(text="Screenshot", command=self.take_screenshot)
+        self.screenshot_btn = tk.Button(text="Screenshot", command=self.take_screenshot)
         self.screenshot_btn.grid(row=7, column=1)
 
-##########################################################################################################
-        self.hsv_img_lbl = Label(text="HSV", image=None)
+########################################################################################################## Images
+        self.hsv_img_lbl = tk.Label(text="HSV", image=None)
         self.hsv_img_lbl.grid(row=0, column=0)
 
-        self.original_img_lbl = Label(text='Original',image=None)
+        self.original_img_lbl = tk.Label(text='Original',image=None)
         self.original_img_lbl.grid(row=0, column=1)
 ##########################################################################################################
     def open_file(self):
@@ -100,27 +103,31 @@ class App:
 
     def preset_r(self, *args):
         self.low_hue.set(0)
-        self.high_hue.set(10)
+        self.high_hue.set(13)
 
         self.low_sat.set(100)
-        self.low_val.set(100)
         self.high_sat.set(255)
+        
+        self.low_val.set(50)
         self.high_val.set(255)
+
     def preset_g(self, *args):
-        self.low_hue.set(50)
-        self.high_hue.set(70)
+        self.low_hue.set(36)
+        self.high_hue.set(90)
 
         self.low_sat.set(100)
         self.high_sat.set(255)
-        self.low_val.set(100)
+
+        self.low_val.set(50)
         self.high_val.set(255)
     def preset_b(self, *args):
-        self.low_hue.set(110)
-        self.high_hue.set(130)
+        self.low_hue.set(80)
+        self.high_hue.set(120)
 
         self.low_sat.set(100)
         self.high_sat.set(255)
-        self.low_val.set(100)
+
+        self.low_val.set(75)
         self.high_val.set(255)
 
     def show_changes(self, *args):
@@ -141,44 +148,43 @@ class App:
         # does nothing if low values go higher than high values
         if low_val > high_val or low_sat > high_sat or low_hue > high_hue:
             return 0
-        # gets image from file
-        if self.img_path != 'screenshot':
-            #img_path = 'objects.png'
-            # loaded as BGR 
-            img_a = cv2.imread(self.img_path,1)
-            # image resized
-            img_a = cv2.resize(img_a,(300,200))
-            img_b = img_a.copy()
-
-        # gets screenshot
-        else:
-            img_a = img_screenshot
-            # image resized
-            img_a = cv2.resize(img_a,(300,200))
-            img_b = img_screenshot.copy()
 
         # Sets the original image once, manipulates the copy in next iterations
         if once: 
+            # gets image from file
+            if self.img_path != 'screenshot':
+                #img_path = 'objects.png'
+                # loaded as BGR 
+                self.original_image = cv2.imread(self.img_path,1)
+                # image resized
+                self.original_image = self.resize_image(self.original_image)
+                self.hsv_image = self.original_image.copy()
+                #converts image to HSV 
+                self.hsv_image = cv2.cvtColor(self.hsv_image, cv2.COLOR_BGR2HSV)
+
+            # gets screenshot
+            else:
+                self.original_image = img_screenshot
+                self.hsv_image = img_screenshot.copy()
+                #converts image to HSV 
+                self.hsv_image = cv2.cvtColor(self.hsv_image, cv2.COLOR_BGR2HSV)
+
             # OpenCV represetns images in BGR order; however PIL represents
             # images in RGB order, so we need to swap the channels
-            imgO = cv2.cvtColor(img_b, cv2.COLOR_BGR2RGB)
+            self.original_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
             
             # convert the images to PIL format
-            imgO = Image.fromarray(imgO)
+            self.original_image = Image.fromarray(self.original_image)
             # convert to ImageTk format
-            imgO = ImageTk.PhotoImage(imgO)
+            self.original_image = ImageTk.PhotoImage(self.original_image)
             # update the original image label
-            self.original_img_lbl.configure(image=imgO)
+            self.original_img_lbl.configure(image=self.original_image)
             # Keeping a reference! b/ need to! 
-            self.original_img_lbl.image = imgO
+            self.original_img_lbl.image = self.original_image
             once = False
 
 
         
-        #converts image to HSV 
-        img = cv2.cvtColor(img_a, cv2.COLOR_BGR2HSV)
-        #converts image to an array usable for open cv2
-        #img = np.array(img)
         
         # sets the lower and uppper values for the mask
         # define range of colors in HSV (hue up to 179, sat-255, value-255
@@ -189,20 +195,20 @@ class App:
         # blue -120,255,255
 
         #creates the mask and result
-        mask = cv2.inRange(img, lower_color, upper_color)
+        mask = cv2.inRange(self.hsv_image, lower_color, upper_color)
         #res = cv2.bitwise_and(img, img, mask=mask)
 
         # converting to RGB format
         #maskbgr = cv2.cvtColor(mask, cv2.COLOR_HSV2BGR)
         #maskrgb = cv2.cvtColor(maskbgr, cv2.COLOR_BGR2RGB)
         # converting to PIL format
-        mask_pil = Image.fromarray(mask)
+        mask = Image.fromarray(mask)
         # convertint to ImageTk format
-        mask_tk = ImageTk.PhotoImage(mask_pil)
-
-        self.hsv_img_lbl.configure(image=mask_tk)
+        mask = ImageTk.PhotoImage(mask)
+        # setting the hsv image to tk image label
+        self.hsv_img_lbl.configure(image=mask)
         # adding a reference to the image to Prevent python's garbage collection from deleting it
-        self.hsv_img_lbl.image = mask_tk
+        self.hsv_img_lbl.image = mask
 
     def reset_values(self):
         self.low_hue.set(0)
@@ -217,6 +223,11 @@ class App:
         """Does NOT actually save, just prints, for now"""
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        print("Screen width:", screen_width)
+        print("Screen height:", screen_height)
+
 
     def take_screenshot(self):
         global img_screenshot, once
@@ -254,10 +265,37 @@ class App:
         # converts the PIL image format to opencv2 image format
         img_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
 
+        # resizes image if higher than 300px in width or height
+        img_screenshot = self.resize_image(img_screenshot)
+
         # this just makes sure the image shows up after opening it
         self.low_hue.set(1)
         self.low_hue.set(0)
+    
+    def resize_image(self,img):
+        # unpacks width, height
+        height, width,_ = img.shape
+        print("Original size: {} {}".format(width, height))
+        count_times_resized = 0
+        while width > 500 or height > 500:
+        #if width > 300 or height > 300:
+            # divides images WxH by half
+            width = width / 2
+            height = height /2
+            count_times_resized += 1
+        # makes sures image is not TOO small
+        if width < 300 and height < 300:
+            width = width * 2
+            height = height * 2
 
-root = Tk()
+        img = cv2.resize(img,(width,height))
+        print("Resized {}x smaller, to: {} {}".format(count_times_resized*2,width, height))
+
+        return img
+
+# Instance of Tkinter
+root = tk.Tk()
+# New tkinter instnace of app
 app = App(root)
+# loops over to keep window active
 root.mainloop()
