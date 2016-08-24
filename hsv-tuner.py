@@ -9,13 +9,17 @@ import cv2
 import numpy as np
 from subprocess import check_output
 from pyscreenshot import grab
+from threading import Thread, Lock
 
 once = True
 img_screenshot = None
 
 class App:
+    screenshot_lock = Lock()
     original_image = None
     hsv_image = None
+    # switch to make sure screenshot not taken while already pressed
+    taking_screeshot = False
     
     def __init__(self, master):
         self.img_path = None
@@ -54,6 +58,7 @@ class App:
         self.high_val = tk.Scale(master, label="High",from_=0, to=255, length=500,orient=tk.HORIZONTAL, command=self.show_changes)
         self.high_val.set(255)
         self.high_val.grid(row=10)
+
 ###########################################################################################################
 # buttons
         self.reset_btn = tk.Button(text='Reset', command=self.reset_values)
@@ -78,6 +83,10 @@ class App:
         # Screenshot
         self.screenshot_btn = tk.Button(text="Screenshot", command=self.take_screenshot)
         self.screenshot_btn.grid(row=7, column=1)
+###########################################################################################################
+        # timer label
+        self.screenshot_timer_lbl = tk.Label(text="Timer", fg='Red')
+        self.screenshot_timer_lbl.grid(row=8, column=1)
 
 ########################################################################################################## Images
         self.hsv_img_lbl = tk.Label(text="HSV", image=None)
@@ -120,6 +129,7 @@ class App:
 
         self.low_val.set(50)
         self.high_val.set(255)
+
     def preset_b(self, *args):
         self.low_hue.set(80)
         self.high_hue.set(120)
@@ -228,7 +238,6 @@ class App:
         print("Screen width:", screen_width)
         print("Screen height:", screen_height)
 
-
     def take_screenshot(self):
         global img_screenshot, once
         # switch to always display the screenshot as original everytime
@@ -244,7 +253,10 @@ class App:
         y2 = None
         
         for i in xrange(2):
-            time.sleep(3)
+            for counter in xrange(3):
+                time.sleep(1)
+                screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update, args=(counter+1,))
+                screenshot_timer_thread.start()
             # Parses output for x and y coords
             coords = check_output(['xdotool','getmouselocation','--shell'])
             fo = coords.find("=")
@@ -259,6 +271,8 @@ class App:
                 x2 = int(coords[fo+1:so])
                 y2 = int(coords[so+2:to])
             print("Pic taken")
+            screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update, args=("Pic taken!",))
+            screenshot_timer_thread.start()
         # screenshot taken here with the grabbed coordinates
         screenshot = grab(bbox=(x1,y1,x2,y2))
         screenshot = np.array(screenshot)
@@ -271,7 +285,10 @@ class App:
         # this just makes sure the image shows up after opening it
         self.low_hue.set(1)
         self.low_hue.set(0)
-    
+
+    def screenshot_timer_lbl_update(self, n):
+        self.screenshot_timer_lbl.config(text="{}".format(n))
+
     def resize_image(self,img):
         # unpacks width, height
         height, width,_ = img.shape
