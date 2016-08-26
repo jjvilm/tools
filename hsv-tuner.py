@@ -19,7 +19,7 @@ class App:
     original_image = None
     hsv_image = None
     # switch to make sure screenshot not taken while already pressed
-    taking_screeshot = False
+    taking_screenshot = False
     
     def __init__(self, master):
         self.img_path = None
@@ -81,7 +81,7 @@ class App:
         self.open_btn.grid(row=6, column=1)
 
         # Screenshot
-        self.screenshot_btn = tk.Button(text="Screenshot", command=self.take_screenshot)
+        self.screenshot_btn = tk.Button(text="Screenshot", command=self.screenshot_standby)
         self.screenshot_btn.grid(row=7, column=1)
 ###########################################################################################################
         # timer label
@@ -220,7 +220,7 @@ class App:
         # adding a reference to the image to Prevent python's garbage collection from deleting it
         self.hsv_img_lbl.image = mask
 
-    def reset_values(self):
+    def reset_values(self,*args):
         self.low_hue.set(0)
         self.low_sat.set(100)
         self.low_val.set(100)
@@ -229,7 +229,7 @@ class App:
         self.high_sat.set(255)
         self.high_val.set(255)
 
-    def print_values(self):
+    def print_values(self,*args):
         """Does NOT actually save, just prints, for now"""
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
@@ -238,8 +238,19 @@ class App:
         print("Screen width:", screen_width)
         print("Screen height:", screen_height)
 
-    def take_screenshot(self):
+    def screenshot_standby(self,*args):
+        if not self.taking_screenshot:
+            take_screenshot_thread = Thread(target=self.take_screenshot)
+            take_screenshot_thread.start()
+        else:
+            return 0
+
+    def take_screenshot(self,*args):
         global img_screenshot, once
+        # switch to stop screenshot button from snaping a shot while snapping a shot
+        self.taking_screenshot = True
+
+
         # switch to always display the screenshot as original everytime
         once = True
 
@@ -252,11 +263,12 @@ class App:
         x2 = None
         y2 = None
         
+        # starts a timer parallel to the for loop
+        screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update)
+        screenshot_timer_thread.start()
         for i in xrange(2):
-            for counter in xrange(3):
+            for _ in xrange(3):
                 time.sleep(1)
-                screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update, args=(counter+1,))
-                screenshot_timer_thread.start()
             # Parses output for x and y coords
             coords = check_output(['xdotool','getmouselocation','--shell'])
             fo = coords.find("=")
@@ -271,8 +283,6 @@ class App:
                 x2 = int(coords[fo+1:so])
                 y2 = int(coords[so+2:to])
             print("Pic taken")
-            screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update, args=("Pic taken!",))
-            screenshot_timer_thread.start()
         # screenshot taken here with the grabbed coordinates
         screenshot = grab(bbox=(x1,y1,x2,y2))
         screenshot = np.array(screenshot)
@@ -285,11 +295,16 @@ class App:
         # this just makes sure the image shows up after opening it
         self.low_hue.set(1)
         self.low_hue.set(0)
+        self.taking_screenshot = False
 
-    def screenshot_timer_lbl_update(self, n):
-        self.screenshot_timer_lbl.config(text="{}".format(n))
+    def screenshot_timer_lbl_update(self,*args):
+        for _ in range(2):
+            for i in range(3):
+                self.screenshot_timer_lbl.config(text="{}".format(i+1))
+                time.sleep(1)
+        self.screenshot_timer_lbl.config(text="{}".format(" "))
 
-    def resize_image(self,img):
+    def resize_image(self,img,*args):
         # unpacks width, height
         height, width,_ = img.shape
         print("Original size: {} {}".format(width, height))
