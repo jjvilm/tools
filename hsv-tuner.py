@@ -15,7 +15,6 @@ once = True
 img_screenshot = None
 
 class App:
-    screenshot_lock = Lock()
     original_image = None
     hsv_image = None
     # switch to make sure screenshot not taken while already pressed
