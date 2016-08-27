@@ -104,8 +104,8 @@ class App:
         if img_file  != '':
             self.img_path = img_file 
             # this just makes sure the image shows up after opening it
-            self.low_hue.set(1)
-            self.low_hue.set(0)
+            self.low_hue.set(self.low_hue.get()+1)
+            self.low_hue.set(self.low_hue.get()-1)
         else:
             print('picked nothing')
             return 0
@@ -132,7 +132,7 @@ class App:
 
     def preset_b(self, *args):
         self.low_hue.set(80)
-        self.high_hue.set(120)
+        self.high_hue.set(125)
 
         self.low_sat.set(100)
         self.high_sat.set(255)
@@ -282,7 +282,6 @@ class App:
             else:
                 x2 = int(coords[fo+1:so])
                 y2 = int(coords[so+2:to])
-            print("Pic taken")
         # screenshot taken here with the grabbed coordinates
         screenshot = grab(bbox=(x1,y1,x2,y2))
         screenshot = np.array(screenshot)
@@ -293,8 +292,8 @@ class App:
         img_screenshot = self.resize_image(img_screenshot)
 
         # this just makes sure the image shows up after opening it
-        self.low_hue.set(1)
-        self.low_hue.set(0)
+        self.low_hue.set(self.low_hue.get()+1)
+        self.low_hue.set(self.low_hue.get()-1)
         self.taking_screenshot = False
 
     def screenshot_timer_lbl_update(self,*args):
@@ -315,13 +314,15 @@ class App:
             width = width / 2
             height = height /2
             count_times_resized += 1
+        # prints x times resized to console
+        if count_times_resized != 0:
+            print("Resized {}x smaller, to: {} {}".format(count_times_resized*2,width, height))
         # makes sures image is not TOO small
         if width < 300 and height < 300:
             width = width * 2
             height = height * 2
 
         img = cv2.resize(img,(width,height))
-        print("Resized {}x smaller, to: {} {}".format(count_times_resized*2,width, height))
 
         return img
 
