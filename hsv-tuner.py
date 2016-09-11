@@ -82,12 +82,16 @@ class App:
         # Screenshot
         self.screenshot_btn = tk.Button(text="Screenshot", command=self.screenshot_standby)
         self.screenshot_btn.grid(row=7, column=1)
+        # print mask array
+        self.print_mask_array_btn = tk.Button(text="Print Array", command=self.print_img_array)
+        self.print_mask_array_btn.grid(row=9, column=1)
 ###########################################################################################################
         # timer label
         self.screenshot_timer_lbl = tk.Label(text="Timer", fg='Red')
         self.screenshot_timer_lbl.grid(row=8, column=1)
 
 ########################################################################################################## Images
+        # images
         self.hsv_img_lbl = tk.Label(text="HSV", image=None)
         self.hsv_img_lbl.grid(row=0, column=0)
 
@@ -230,12 +234,15 @@ class App:
 
     def print_values(self,*args):
         """Does NOT actually save, just prints, for now"""
+        print('\n')
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-        print("Screen width:", screen_width)
-        print("Screen height:", screen_height)
+        print(self.hsv_img_lbl)
+        print(self.hsv_img_lbl.image)
+        #screen_width = root.winfo_screenwidth()
+        #screen_height = root.winfo_screenheight()
+        #print("Screen width:", screen_width)
+        #print("Screen height:", screen_height)
 
     def screenshot_standby(self,*args):
         if not self.taking_screenshot:
@@ -249,11 +256,9 @@ class App:
         # switch to stop screenshot button from snaping a shot while snapping a shot
         self.taking_screenshot = True
 
-
         # switch to always display the screenshot as original everytime
         once = True
 
-        
         # makes sure method 'show_changes' takes screenshot instead of img file
         self.img_path = 'screenshot'
         # initializes coords for screenshot
@@ -262,7 +267,7 @@ class App:
         x2 = None
         y2 = None
         
-        # starts a timer parallel to the for loop
+        # starts a cound down timer of 3 seconds, parallel to the for loop
         screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update)
         screenshot_timer_thread.start()
         for i in xrange(2):
@@ -286,6 +291,13 @@ class App:
         screenshot = np.array(screenshot)
         # converts the PIL image format to opencv2 image format
         img_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+        # printing image array, by taking another screenshot and processing, effects will now show
+        try:
+            if args[0] == 'array':
+                self.taking_screenshot = False
+                return img_screenshot
+        except:
+            pass
 
         # resizes image if higher than 300px in width or height
         img_screenshot = self.resize_image(img_screenshot)
@@ -293,6 +305,7 @@ class App:
         # this just makes sure the image shows up after opening it
         self.low_hue.set(self.low_hue.get()+1)
         self.low_hue.set(self.low_hue.get()-1)
+        # switch to allow for next screenshot
         self.taking_screenshot = False
 
     def screenshot_timer_lbl_update(self,*args):
@@ -324,6 +337,26 @@ class App:
         img = cv2.resize(img,(width,height))
 
         return img
+
+    def print_img_array(self):
+        img = self.take_screenshot('array')
+        #converts image to HSV 
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # gets the values from the sliders
+        low_hue = self.low_hue.get()
+        low_sat = self.low_sat.get()
+        low_val = self.low_val.get()
+        # gets upper values from sliders
+        high_hue = self.high_hue.get()
+        high_sat = self.high_sat.get()
+        high_val = self.high_val.get()
+        lower_color = np.array([low_hue,low_sat,low_val]) 
+        upper_color= np.array([high_hue,high_sat,high_val])
+        #creates the mask and result
+        mask = cv2.inRange(self.hsv_image, lower_color, upper_color)
+        mask = np.array(mask)
+        mask.view
+
 
 # Instance of Tkinter
 root = tk.Tk()
