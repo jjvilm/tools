@@ -6,6 +6,10 @@ import urllib2
 import numpy as np
 import sys
 
+#Define the codec and create VideoWriter object
+fourcc = cv2.cv.CV_FOURCC(*'mp4v')
+out = cv2.VideoWriter('output.mp4',fourcc, 20.0, (640,480))
+
 host = "192.168.1.141:8080"
 if len(sys.argv)>1:
     host = sys.argv[1]
@@ -17,7 +21,7 @@ stream=urllib2.urlopen(hoststr)
 
 bytes=''
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-fgbg = cv2.BackgroundSubtractorMOG2()
+fgbg = cv2.BackgroundSubtractorMOG()
 
 while True:
     bytes+=stream.read(1024)
@@ -28,8 +32,11 @@ while True:
         bytes= bytes[b+2:]
         frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
 
-        fgbg = cv2.morphologyEx(fgbg, cv2.MORPH_OPEN, kernel)
-        fgbg = fgbg.apply(frame)
+        # saving frame
+        out.write(frame)
+
+        #fgmask = fgbg.apply(frame)
+        #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
 
         # flipping image
 #        rows, cols,_ = i.shape
@@ -38,8 +45,13 @@ while True:
 #        cv2.imshow(hoststr,dst)
         # flipping image
 
-        cv2.imshow(hoststr,fgbg)
+        #cv2.imshow(hoststr,fgmask)
+        cv2.imshow(hoststr,frame)
         if cv2.waitKey(1) ==27:
-            exit(0)
+            break
+            #exit(0)
 
+out.release()
+cv2.destroyAllWindows()
+print('done')
 
