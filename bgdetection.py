@@ -6,12 +6,15 @@ import urllib2
 import numpy as np
 import sys
 import datetime
+from os import system
+import time 
+
 
 #Define the codec and create VideoWriter object
 #fourcc = cv2.cv.CV_FOURCC(*'DIVX')
 #out = cv2.VideoWriter('output.mov',fourcc, 30.0, (320,240))
 
-host = "192.168.1.141:8080"
+host = "192.168.1.157:8080"
 
 if len(sys.argv)>1:
     host = sys.argv[1]
@@ -37,13 +40,22 @@ while True:
 
         # saving frame
         #out.write(frame)
-        cv2.imwrite('{}.png'.format(datetime.datetime.now().strftime("%H:%M:%S.%f-%F")), frame)
 
-        fgmask = fgbg.apply(frame)
+        # crop top text off frame off
+        frame_crop = frame[14::,:] # Crop from x, y, w, h -> 100, 200, 300, 400
+
+
+        fgmask = fgbg.apply(frame_crop)
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
-        # work on this 
-        try:
-            contour, _ = cv2.findContours(fgmask.copy(), 
+
+        contours, _ = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for con in contours:
+            if con == []:
+                break
+            else:
+                cv2.imwrite('/home/jj/github/tools/imgs/{}.png'.format(datetime.datetime.now().strftime("%H:%M:%S.%f-%F")), frame)
+            #print('Found a contour')
+
         # work on this 
 
         # flipping image
@@ -53,16 +65,17 @@ while True:
 #        cv2.imshow(hoststr,dst)
         # flipping image
 
-        #cv2.imshow(hoststr,fgmask)
+        cv2.imshow(hoststr,fgmask)
         #cv2.imshow(hoststr,frame)
-        #if cv2.waitKey(1) ==27:
-        #    break
-        counter += 1
-        if counter == 20:
+        if cv2.waitKey(1) ==27:
+            exit(0)
             break
+        #counter += 1
+        #if counter == 20:
+        #    break
             #exit(0)
 
-out.release()
+#out.release()
 cv2.destroyAllWindows()
 print('done')
 
