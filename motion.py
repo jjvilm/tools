@@ -12,6 +12,9 @@ class Cam(object):
         self.cam_name = cam_name 
         self.host = host
 
+        object_thread = threading.Thread(target=self.run_motion_detection)
+        object_thread.start()
+
     def run_motion_detection(self):
 
         if len(sys.argv)>1:
@@ -34,9 +37,9 @@ class Cam(object):
                 bytes= bytes[b+2:]
                 frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
                 # crop top text off frame off
-                frame = frame[:-16:,:] # Crop from x, y, w, h -> 100, 200, 300, 400
+                frame_cropped = frame[:-16:,:] # Crop from x, y, w, h -> 100, 200, 300, 400
 
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(frame_cropped, cv2.COLOR_BGR2GRAY)
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
                 if firstFrame is None:
@@ -72,10 +75,4 @@ class Cam(object):
 
 camA = Cam("Living Room", "192.168.1.129:8080")
 camB = Cam("Bedroom", "192.168.1.131:8080")
-
-
-cam_thread = threading.Thread(target= camA.run_motion_detection)
-cam_thread.start()
-
-cam_thread2 = threading.Thread(target= camB.run_motion_detection)
-cam_thread2.start()
+camC = Cam("House", "192.168.1.144:8080")
