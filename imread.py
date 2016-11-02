@@ -1,29 +1,36 @@
 #!/usr/bin/python
-
 import cv2
 import os
 import time
 import commands
 
+# switch to iterate to equal frame n 
 switch = False
+# Global variable to control speed of frames
+frame_speed = 0
+# global variable for max frames
+t_n_frames = 0
 
 def get_dir_size(start_path):
+    global t_n_frames
     total_size = 0
+    counter = 0 
     for dirpath, dirnames, filenames in os.walk(start_path):
         for f in filenames:
             fp = os.path.join(dirpath, f)
             total_size += os.path.getsize(fp)
-    print("Size of directory: {}".format((total_size/1024)/1024))
+            counter += 1
+    t_n_frames = counter - 1
+    print("Size of directory: {}\nFrames: {}\n".format((total_size/1024)/1024, t_n_frames))
     time.sleep(.5)
 
 folder_name = raw_input('Folder name: ')
 folder = '/home/pi/sec-imgs/'+folder_name
 get_dir_size(folder)
-#frame = None
 
 os.chdir(folder)
-# sorted list by creation time 
 
+# sorted list by creation time 
 imgs_list = commands.getstatusoutput("ls -ltr | awk '{print $9}'")
 imgs_list = imgs_list[1].split('\n')
 
@@ -32,10 +39,16 @@ new_frame_from_slider = False
 frame_selected = 0
 
 def frame_selection():
+    global t_n_frames
     while True:
         frame_selected = raw_input("Start frame:\n")
+        if frame_selected == 'q':
+            return
         try:
             frame_selected = int(frame_selected)
+            if frame_selected > t_n_frames:
+                print('Frame out of range')
+                continue
             return frame_selected
         except:
             print("NOT AN INT\n")
@@ -46,24 +59,80 @@ def frame_slider(x):
     frame_selected = c_frame
     new_frame_from_slider = True
     switch = True
+def set_frame_speed(x):
+    global frame_speed
+    slider_speed = cv2.getTrackbarPos('Speed','Frames-Control')
+    speeds = {
+            0: 0,
+            1: .005,
+            2: .015,
+            3: .025,
+            4: .050,
+            5: .075,
+            6: .1,
+            7: .3,
+            8: .5,
+            9: .9,
+            10: 1
+            }
+    frame_speed = speeds[slider_speed]
 
+
+def frame_by_frame(current_frame_n):
+    global imgs_list, folder
+    once = True
+    # initialize frame to avoid crash when frame > max frames or < current frame
+    frame = None
+    while True:
+        if once:
+            image_file_path = imgs_list[current_frame_n]
+            frame = cv2.imread(folder+'/'+image_file_path)
+            once = False
+
+        cv2.imshow("Frames-Control", frame)
+
+        key = cv2.waitKey(33) & 0xFF
+       
+        # forward
+        if key == ord('.'):
+            if current_frame_n  < t_n_frames:
+                current_frame_n += 1
+                once = True
+            else:
+                current_frame_n = 1
+                once = True
+
+        # backward
+        if key == ord(','):
+            if current_frame_n >= 2:
+                current_frame_n -= 1
+                once = True
+            else:
+                current_frame_n = t_n_frames
+                once = True
+        if key == ord('/'):
+            return current_frame_n
 
 
 
 def main():
-    global frame_selected, imgs_list, new_frame_from_slider, switch
+    global frame_selected, imgs_list, new_frame_from_slider, switch, frame_speed
 
+    # window for slider
     cv2.namedWindow('Frames-Control')
+    # Slider for frame tuning
     cv2.createTrackbar('Frames:', 'Frames-Control', 0, len(imgs_list)-1,frame_slider)
+    # Speed slider
+    cv2.createTrackbar('Speed','Frames-Control',0,10, set_frame_speed)
 
     while True:
         if frame_selected < 0:
-            frame_selected = 0
-        print('Frame_selected = {}'.format(frame_selected))
+            frame_selected = 1
+        #print('Frame_selected = {}'.format(frame_selected))
 
         for n_current_frame,i in enumerate(imgs_list[frame_selected:]):
            # Outputs frame to terminal
-            print("Curr: {} Sel: {}".format(n_current_frame, frame_selected))
+            #print("Curr: {} Sel: {}".format(n_current_frame, frame_selected))
             print("Frame:{} ".format(n_current_frame+frame_selected))
 
             # skips first empty file
@@ -76,7 +145,13 @@ def main():
                 else:
                     continue
             frame = cv2.imread(folder+"/"+i, -1)
-            cv2.imshow("Frames-Control",frame)
+            # Sometimes imshow crashes on this line while 
+            # reading image file
+            try:
+                cv2.imshow("Frames-Control",frame)
+            except:
+                print('BAD Frame')
+                continue
 
             key = cv2.waitKey(33) & 0xFF
 
@@ -84,15 +159,40 @@ def main():
                 exit(0)
             if key == ord('p'):
                 cv2.waitKey(0)
+            # Increases speed
+            if key == ord('>'):
+                if frame_speed != 0 and frame_speed >= .005:
+                    frame_speed -= .005
+                print('Frame speed changed to {}'.format(frame_speed))
+            # Decrases frame play
+            if key == ord('<'):
+                frame_speed += .005
+                print('Frame speed changed to {}'.format(frame_speed))
+            # Normal Speed
+            if key == ord('/'):
+                frame_speed  = 0
+                print('Frame speed changed to {}'.format(frame_speed))
             if key == ord('f'):
                 print("Max frame == {}".format(len(imgs_list)))
                 frame_selected = frame_selection()
                 break
-
-            if new_frame_from_slider:
-                new_frame_from_slider = False
+            if key == ord('.'):
+                #frame_selected = frame_by_frame(frame_selected)
+                # goes into a loop that pauses frames
+                frame_selected = frame_by_frame(n_current_frame)
                 break
-            time.sleep(.25)
+            if key == ord('='):
+                frame_selected += 100 
+                break
+            if key == ord('-'):
+                frame_selected -= 100 
+                break
+
+            #print("Frame speed: {}".format(frame_speed))
+            time.sleep(frame_speed)
+            if new_frame_from_slider:
+                #new_frame_from_slider = False
+                break
 
 
 main()
