@@ -9,6 +9,7 @@ import sys
 import threading
 import time
 import datetime
+size = 500
 
 class Cam(object):
     turn_lock = threading.Lock()
@@ -24,6 +25,12 @@ class Cam(object):
         # will bring up a back online cam
         # after exception in self.view()
         pass
+    def resizeim(self,frame):
+        r = float(size) / frame.shape[1]
+        dim = (int(size), int(frame.shape[0] * r))
+        resized = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+        return resized
+
     def view(self):
         while True:
             try:
@@ -40,7 +47,6 @@ class Cam(object):
                 return
 
         bytes=''
-        counter_for_frames = 0
         while True:
             start_time = datetime.datetime.now().strftime('%s')
             try:
@@ -66,40 +72,57 @@ class Cam(object):
 #                        counter_for_frames += 1
 #                        end_time = datetime.datetime.now().strftime('%s')
 
+                    # resized
+                    i = self.resizeim(i)
                     cv2.imshow(self.cam_name,i)
-                    counter_for_frames += 1
-                    end_time = datetime.datetime.now().strftime('%s')
-                    # checks if 1 sec has passed, then shows counter
-                    if int(end_time) - int(start_time) >= 1:
-                        print(counter)
-                        counter = 0
+
                     key = cv2.waitKey(33) & 0xFF
+
                     if key == ord('q'):
                         exit(0)
-            except:
+            except Exception as e:
                 # if not data then break function ending thread
-                print('exceptiong happend')
-                #break
-                continue
+                print('exceptiong happend',e)
+                return
+                break
+                #continue
 
             
 def view_all():
     cam1 = Cam('Bedroom',"192.168.1.131:8080")
     cam2 = Cam('House',"192.168.1.144:8080")
     cam3 = Cam('Living Room',"192.168.1.129:8080")
+def main():
+    # Prints the list of cams and it's corresponding index number
+    for i,key in enumerate(cams.keys()):
+        print("{} {}".format(i,key))
+    # Loop to only get a number
+    while 1:
+        try:
+            answer = int(raw_input("Choose Camera:\n"))
+            break
 
+        except Exception as e:
+            print("Not a number\n{}".format(e))
+
+    if answer == 'All':
+        cams['All']()
+    else:
+        for i, key in enumerate(cams.keys()):
+            if i == answer:
+                answer = key
+                break
+        # runs the choses camara
+        cams[answer].run_thread()
+
+
+# dictionary of all the camaras
 cams = {
 'Bedroom':Cam('Bedroom',"192.168.1.131:8080"),
 'House':Cam('House',"192.168.1.144:8080"),
-'Living Room':Cam('Living Room',"192.168.1.129:8080"),
+'Living Room':Cam('Living Room',"192.168.1.131:8080"),
+'lg':Cam('LG','192.168.1.122:8080'),
 'All':view_all
 }
 
-for key in cams.keys():
-    print("{}".format(key))
-answer = raw_input("Choose Camera:\n")
-if answer == 'All':
-    cams['All']()
-else:
-    cams[answer].run_thread()
-
+main()

@@ -287,8 +287,12 @@ class App:
                 x2 = int(coords[fo+1:so])
                 y2 = int(coords[so+2:to])
         # screenshot taken here with the grabbed coordinates
-        screenshot = grab(bbox=(x1,y1,x2,y2))
-        screenshot = np.array(screenshot)
+        try:
+            screenshot = grab(bbox=(x1,y1,x2,y2))
+            screenshot = np.array(screenshot)
+        except:
+            print("Could not capture image")
+            return
         # converts the PIL image format to opencv2 image format
         img_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
         # printing image array, by taking another screenshot and processing, effects will now show

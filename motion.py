@@ -7,6 +7,7 @@ import datetime
 import time 
 import os
 import threading
+import multiprocessing
 
 
 run = True
@@ -20,8 +21,8 @@ class Cam(object):
         self.firstFrame = None
         self.turn = threading.Lock()
 
-        object_thread = threading.Thread(target=self.run_motion_detection)
-        object_thread.start()
+        object_process = multiprocessing.Process(target=self.run_motion_detection)
+        object_process.start()
 
     def cam_connectivity(self):
         global run
@@ -128,6 +129,6 @@ def stop_threads():
 stop_thread = threading.Thread(target=stop_threads)
 stop_thread.start()
 
-camA = Cam("Living Room", "192.168.1.129:8080")
-camB = Cam("Bedroom", "192.168.1.131:8080")
-camC = Cam("House", "192.168.1.144:8080")
+camA = Cam("Living Room", "192.168.1.122:8080")
+#camB = Cam("Bedroom", "192.168.1.129:8080")
+#camC = Cam("House", "192.168.1.144:8080")

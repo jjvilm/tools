@@ -88,7 +88,8 @@ def frame_by_frame(current_frame_n):
             image_file_path = imgs_list[current_frame_n]
             frame = cv2.imread(folder+'/'+image_file_path)
             once = False
-
+        # resizes 400% on frame by frame
+        frame = resize(frame)
         cv2.imshow("Frames-Control", frame)
 
         key = cv2.waitKey(33) & 0xFF
@@ -112,6 +113,11 @@ def frame_by_frame(current_frame_n):
                 once = True
         if key == ord('/'):
             return current_frame_n
+def resize(frame):
+    r = 400.0 / frame.shape[1]
+    dim = (400 , int(frame.shape[0] * r))
+    resized = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
+    return resized
 
 
 
