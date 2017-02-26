@@ -24,10 +24,14 @@ def get_dir_size(start_path):
     print("Size of directory: {}\nFrames: {}\n".format((total_size/1024)/1024, t_n_frames))
     time.sleep(.5)
 
-folder_name = raw_input('Folder name: ')
-folder = '/home/pi/sec-imgs/'+folder_name
+#folder_name = raw_input('Folder name: ')
+folder = '~/sec-imgs'
 get_dir_size(folder)
 
+#creates above folder if it does not exist
+if not os.path.exists(folder):
+	print('{} created!'.format(folder))
+	os.makedirs(folder)
 os.chdir(folder)
 
 # sorted list by creation time 
