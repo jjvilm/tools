@@ -129,6 +129,6 @@ def stop_threads():
 stop_thread = threading.Thread(target=stop_threads)
 stop_thread.start()
 
-camA = Cam("Living Room", "192.168.1.122:8080")
+camA = Cam("Living Room", "192.168.0.109:8080")
 #camB = Cam("Bedroom", "192.168.1.129:8080")
 #camC = Cam("House", "192.168.1.144:8080")

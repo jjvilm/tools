@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # Stream Video with OpenCV from an Android running IP Webcam (https://play.google.com/store/apps/details?id=com.pas.webcam)
 # Code Adopted from http://stackoverflow.com/questions/21702477/how-to-parse-mjpeg-http-stream-from-ip-camera
 
@@ -9,6 +9,8 @@ import sys
 import threading
 import time
 import datetime
+
+# resized image percentage
 size = 500
 
 class Cam(object):
@@ -21,10 +23,12 @@ class Cam(object):
         with self.turn_lock:
             cam_thread = threading.Thread(target=self.view)
             cam_thread.start()
+
     def ping_cam():
         # will bring up a back online cam
         # after exception in self.view()
         pass
+
     def resizeim(self,frame):
         r = float(size) / frame.shape[1]
         dim = (int(size), int(frame.shape[0] * r))
@@ -32,13 +36,13 @@ class Cam(object):
         return resized
 
     def view(self):
-        while True:
+        while 1:
             try:
                 if len(sys.argv)>1:
                     self.host = sys.argv[1]
 
                 hoststr = 'http://' + self.host + '/video'
-                print 'Streaming ' + hoststr
+                print('Streaming ' + hoststr)
 
                 stream=urllib2.urlopen(hoststr)
                 break
@@ -47,7 +51,7 @@ class Cam(object):
                 return
 
         bytes=''
-        while True:
+        while 1:
             start_time = datetime.datetime.now().strftime('%s')
             try:
                 bytes+=stream.read(1024)
@@ -56,7 +60,10 @@ class Cam(object):
                 if a!=-1 and b!=-1:
                     jpg = bytes[a:b+2]
                     bytes= bytes[b+2:]
-                    i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
+                    # cv2 version 2
+                    #i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
+                    # cv2 version 3
+                    i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
 
                     if self.cam_name == 'House':
                         # flipping image
@@ -85,23 +92,22 @@ class Cam(object):
                 print('exceptiong happend',e)
                 return
                 break
-                #continue
 
-            
 def view_all():
     cam1 = Cam('Bedroom',"192.168.1.131:8080")
     cam2 = Cam('House',"192.168.1.144:8080")
     cam3 = Cam('Living Room',"192.168.1.129:8080")
+
 def main():
     # Prints the list of cams and it's corresponding index number
     for i,key in enumerate(cams.keys()):
         print("{} {}".format(i,key))
-    # Loop to only get a number
+
+    # Get camara number
     while 1:
         try:
             answer = int(raw_input("Choose Camera:\n"))
             break
-
         except Exception as e:
             print("Not a number\n{}".format(e))
 
@@ -119,9 +125,9 @@ def main():
 # dictionary of all the camaras
 cams = {
 'Bedroom':Cam('Bedroom',"192.168.1.131:8080"),
-'House':Cam('House',"192.168.1.144:8080"),
+'House':Cam('House',"192.168.0.107:8080"),
 'Living Room':Cam('Living Room',"192.168.1.131:8080"),
-'lg':Cam('LG','192.168.1.122:8080'),
+'lg':Cam('LG','192.168.0.106:8080'),
 'All':view_all
 }
 
