@@ -121,7 +121,7 @@ cams = {
 'Bedroom':Cam('Bedroom',"192.168.1.131:8080"),
 'House':Cam('House',"192.168.1.144:8080"),
 'Living Room':Cam('Living Room',"192.168.1.131:8080"),
-'lg':Cam('LG','192.168.1.122:8080'),
+'lg':Cam('LG','192.168.0.106:8080'),
 'All':view_all
 }
 

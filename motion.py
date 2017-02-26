@@ -20,6 +20,7 @@ class Cam(object):
         self.online_switch = True
         self.firstFrame = None
         self.turn = threading.Lock()
+        self.folder = '~/sec-imgs'
 
         object_process = multiprocessing.Process(target=self.run_motion_detection)
         object_process.start()
@@ -105,11 +106,11 @@ class Cam(object):
 
                         if cnts != []:
                             try:
-                                cv2.imwrite('/home/pi/sec-imgs/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
+                                cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
 
                             except:
                                 print("saved FAIL")
-                                cv2.imwrite('/home/pi/sec-imgs/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
+                                cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
 
                             #time.sleep(1)
                             self.firstFrame = None
@@ -129,6 +130,6 @@ def stop_threads():
 stop_thread = threading.Thread(target=stop_threads)
 stop_thread.start()
 
-camA = Cam("Living Room", "192.168.1.122:8080")
+camA = Cam("Living Room", "192.168.0.106:8080")
 #camB = Cam("Bedroom", "192.168.1.129:8080")
 #camC = Cam("House", "192.168.1.144:8080")
