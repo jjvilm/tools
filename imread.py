@@ -25,18 +25,21 @@ def get_dir_size(start_path):
     time.sleep(.5)
 
 #folder_name = raw_input('Folder name: ')
-folder = '~/sec-imgs'
+folder = 'sec-imgs'
 get_dir_size(folder)
 
 #creates above folder if it does not exist
 if not os.path.exists(folder):
 	print('{} created!'.format(folder))
 	os.makedirs(folder)
+
 os.chdir(folder)
 
 # sorted list by creation time 
 imgs_list = commands.getstatusoutput("ls -ltr | awk '{print $9}'")
 imgs_list = imgs_list[1].split('\n')
+#print(imgs_list)
+
 
 new_frame_from_slider = False
 
@@ -90,11 +93,11 @@ def frame_by_frame(current_frame_n):
     while True:
         if once:
             image_file_path = imgs_list[current_frame_n]
-            frame = cv2.imread(folder+'/'+image_file_path)
+            frame = cv2.imread(image_file_path)
             once = False
         # resizes 400% on frame by frame
         frame = resize(frame)
-        cv2.imshow("Frames-Control", frame)
+        cv2.imshow("Frames", frame)
 
         key = cv2.waitKey(33) & 0xFF
        
@@ -129,11 +132,11 @@ def main():
     global frame_selected, imgs_list, new_frame_from_slider, switch, frame_speed
 
     # window for slider
-    cv2.namedWindow('Frames-Control')
+    #cv2.namedWindow('Frames-Control')
     # Slider for frame tuning
-    cv2.createTrackbar('Frames:', 'Frames-Control', 0, len(imgs_list)-1,frame_slider)
+    #cv2.createTrackbar('Frames:', 'Frames-Control', 0, len(imgs_list)-1,frame_slider)
     # Speed slider
-    cv2.createTrackbar('Speed','Frames-Control',0,10, set_frame_speed)
+    #cv2.createTrackbar('Speed','Frames-Control',0,10, set_frame_speed)
 
     while True:
         if frame_selected < 0:
@@ -154,13 +157,13 @@ def main():
                     switch = False
                 else:
                     continue
-            frame = cv2.imread(folder+"/"+i, -1)
             # Sometimes imshow crashes on this line while 
             # reading image file
             try:
-                cv2.imshow("Frames-Control",frame)
-            except:
-                print('BAD Frame')
+                frame = cv2.imread(i, -1)
+                cv2.imshow("Frames",frame)
+            except Exception as e:
+                print(e,'\nBAD Frame')
                 continue
 
             key = cv2.waitKey(33) & 0xFF
@@ -182,18 +185,22 @@ def main():
             if key == ord('/'):
                 frame_speed  = 0
                 print('Frame speed changed to {}'.format(frame_speed))
+            # Frame selection prompt
             if key == ord('f'):
                 print("Max frame == {}".format(len(imgs_list)))
                 frame_selected = frame_selection()
                 break
+            # Frame by frame paused
             if key == ord('.'):
                 #frame_selected = frame_by_frame(frame_selected)
                 # goes into a loop that pauses frames
                 frame_selected = frame_by_frame(n_current_frame)
                 break
+            # skips by 100 frames
             if key == ord('='):
                 frame_selected += 100 
                 break
+            # backwards by 100 frames
             if key == ord('-'):
                 frame_selected -= 100 
                 break

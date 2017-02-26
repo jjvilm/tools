@@ -7,7 +7,7 @@ import datetime
 import time 
 import os
 import threading
-import multiprocessing
+#import multiprocessing
 
 
 run = True
@@ -20,9 +20,10 @@ class Cam(object):
         self.online_switch = True
         self.firstFrame = None
         self.turn = threading.Lock()
-        self.folder = '~/sec-imgs'
+        self.folder = 'sec-imgs'
 
-        object_process = multiprocessing.Process(target=self.run_motion_detection)
+        #object_process = multiprocessing.Process(target=self.run_motion_detection)
+        object_process = threading.Thread(target=self.run_motion_detection)
         object_process.start()
 
     def cam_connectivity(self):
@@ -32,7 +33,8 @@ class Cam(object):
         while run:
             try:
                 urllib2.urlopen('http://' + self.host + '/video')
-            except:
+            except Exception as e:
+                print(e)
                 if self.online_switch:
                     print("\n{} {}...OFFLINE\n".format(datetime.datetime.now().strftime("%F %H:%M"), self.cam_name))
                     self.online_switch = False
@@ -61,7 +63,8 @@ class Cam(object):
                     stream=urllib2.urlopen(hoststr)
                     print("\n{}...{} ONLINE".format(datetime.datetime.now().strftime("%F %H:%M"),self.cam_name))
                     break
-                except:
+                except Exception as e:
+                    print(e)
                     if self.cam_connectivity() == 'online':
                         break
 
@@ -80,7 +83,11 @@ class Cam(object):
                     if a!=-1 and b!=-1:
                         jpg = bytes[a:b+2]
                         bytes= bytes[b+2:]
-                        frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
+                        # cv2 version 2
+                        #frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.CV_LOAD_IMAGE_COLOR)
+                        # cv2 version 3
+                        frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
+
                         # crop top text off frame off
                         frame_cropped = frame[:-16:,:] # Crop from x, y, w, h -> 100, 200, 300, 400
 
@@ -94,7 +101,7 @@ class Cam(object):
                         # compute the absolute difference between the current frame and first frame
                         frameDelta = cv2.absdiff(self.firstFrame, gray)
                         #                                  25 normal
-                        thresh = cv2.threshold(frameDelta, 50, 255, cv2.THRESH_BINARY)[1]
+                        thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
 
                         # dilate the thresholded image to fill in holes, then find contours on thresholded image
                         thresh = cv2.dilate(thresh, None, iterations=2)
@@ -102,21 +109,26 @@ class Cam(object):
                         #cv2.imshow(hoststr+'mask',thresh)
                         #cv2.imshow(hoststr,frame)
 
-                        (cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                        #(cnts, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+                        _,cnts,_ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
 
                         if cnts != []:
                             try:
-                                cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
+                                #cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
+                                cv2.imwrite(self.folder+'/{}.png'.format(datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
+                                #print('saved')
 
-                            except:
+                            except Exception as e:
+                                print(e)
                                 print("saved FAIL")
-                                cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
 
                             #time.sleep(1)
                             self.firstFrame = None
                             continue
-                except:
+
+                except Exception as e:
                     # another check
+                    print('second exception broken',e)
                     break
 
 def stop_threads():
@@ -130,6 +142,6 @@ def stop_threads():
 stop_thread = threading.Thread(target=stop_threads)
 stop_thread.start()
 
-camA = Cam("Living Room", "192.168.0.109:8080")
-#camB = Cam("Bedroom", "192.168.1.129:8080")
+camA = Cam("Living Room", "192.168.0.106:8080")
+camB = Cam("Bedroom", "192.168.1.144:8080")
 #camC = Cam("House", "192.168.1.144:8080")
