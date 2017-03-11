@@ -21,8 +21,8 @@ def get_dir_size(start_path):
             total_size += os.path.getsize(fp)
             counter += 1
     t_n_frames = counter - 1
-    print("Size of directory: {}\nFrames: {}\n".format((total_size/1024)/1024, t_n_frames))
-    time.sleep(.5)
+    print("Size of directory: {:.2f}MB\nFrames: {}\n".format((total_size/1024.0)/1024.0, t_n_frames))
+    raw_input()
 
 #folder_name = raw_input('Folder name: ')
 folder = 'sec-imgs'
