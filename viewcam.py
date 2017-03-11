@@ -9,11 +9,12 @@ import sys
 import threading
 import time
 import datetime
+import Camara
 
 # resized image percentage
 size = 500
 
-class Cam(object):
+class Camara_obj(object):
     turn_lock = threading.Lock()
     def __init__(self, cam_name, host):
         self.cam_name = cam_name
@@ -65,6 +66,8 @@ class Cam(object):
                     # cv2 version 3
                     i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
 
+                    #print(i.shape)
+
                     if self.cam_name == 'House':
                         # flipping image
                         rows, cols,_ = i.shape
@@ -94,11 +97,12 @@ class Cam(object):
                 break
 
 def view_all():
-    cam1 = Cam('Bedroom',"192.168.1.131:8080")
-    cam2 = Cam('House',"192.168.1.144:8080")
-    cam3 = Cam('Living Room',"192.168.1.129:8080")
+    cam1 = Camara_obj('Bedroom',"192.168.1.131:8080")
+    cam2 = Camara_obj('House',"192.168.1.144:8080")
+    cam3 = Camara_obj('Living Room',"192.168.1.129:8080")
 
 def main():
+    cams = Camara.InStore()
     # Prints the list of cams and it's corresponding index number
     for i,key in enumerate(cams.keys()):
         print("{} {}".format(i,key))
@@ -117,18 +121,19 @@ def main():
         for i, key in enumerate(cams.keys()):
             if i == answer:
                 answer = key
+                print(answer)
                 break
         # runs the choses camara
-        cams[answer].run_thread()
+        cam = Camara_obj(answer, cams[answer])
+        cam.run_thread()
 
 
 # dictionary of all the camaras
-cams = {
-'Bedroom':Cam('Bedroom',"192.168.1.144:8080"),
-'House':Cam('House',"192.168.0.107:8080"),
-'Living Room':Cam('Living Room',"192.168.1.131:8080"),
-'lg':Cam('LG','192.168.0.106:8080'),
-'All':view_all
-}
+#cams = {
+#'Bedroom':Camara_obj('Bedroom',"192.168.1.144:8080"),
+#'House':Camara_obj('House',"192.168.0.107:8080"),
+#'Living Room':Camara_obj('Living Room',"192.168.1.131:8080"),
+#'lg':Camara_obj('LG','192.168.1.122:8080'),
+#}
 
 main()
