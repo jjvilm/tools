@@ -7,6 +7,7 @@ import datetime
 import time 
 import os
 import threading
+import Camara
 #import multiprocessing
 
 
@@ -142,6 +143,11 @@ def stop_threads():
 stop_thread = threading.Thread(target=stop_threads)
 stop_thread.start()
 
-camA = Cam("Living Room", "192.168.0.106:8080")
-camB = Cam("Bedroom", "192.168.1.144:8080")
+#camA = Cam("Living Room", "192.168.0.106:8080")
+#camB = Cam("Bedroom", "192.168.1.144:8080")
 #camC = Cam("House", "192.168.1.144:8080")
+cams_dict = Camara.InStore()
+
+# creates and runs recording on each object
+for key in cams_dict:
+    Cam(key, cams_dict[key])
