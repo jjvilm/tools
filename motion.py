@@ -90,7 +90,7 @@ class Cam(object):
                         frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
 
                         # crop top text off frame off
-                        frame_cropped = frame[:-16:,:] # Crop from x, y, w, h -> 100, 200, 300, 400
+                        frame_cropped = frame[16::,:] # Crop from x, y, w, h -> 100, 200, 300, 400
 
                         gray = cv2.cvtColor(frame_cropped, cv2.COLOR_BGR2GRAY)
                         gray = cv2.GaussianBlur(gray, (21, 21), 0)

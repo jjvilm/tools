@@ -82,6 +82,8 @@ class Camara_obj(object):
 #                        counter_for_frames += 1
 #                        end_time = datetime.datetime.now().strftime('%s')
 
+                    # crop top 
+                    i = i[16::,:] # crop from x,y, w,h 
                     # resized
                     i = self.resizeim(i)
                     cv2.imshow(self.cam_name,i)

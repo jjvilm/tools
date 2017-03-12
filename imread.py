@@ -7,7 +7,7 @@ import commands
 # switch to iterate to equal frame n 
 switch = False
 # Global variable to control speed of frames
-frame_speed = 0
+frame_speed = 0.30 # .3 normilizes time
 # global variable for max frames
 t_n_frames = 0
 
