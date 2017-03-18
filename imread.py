@@ -10,6 +10,8 @@ switch = False
 frame_speed = 0.30 # .3 normilizes time
 # global variable for max frames
 t_n_frames = 0
+# exit switch for empty directory
+exit = False
 
 def get_dir_size(start_path):
     global t_n_frames
@@ -22,11 +24,16 @@ def get_dir_size(start_path):
             counter += 1
     t_n_frames = counter - 1
     print("Size of directory: {:.2f}MB\nFrames: {}\n".format((total_size/1024.0)/1024.0, t_n_frames))
-    raw_input()
+    if total_size <= 0:
+        return 1
+    return 0
 
 #folder_name = raw_input('Folder name: ')
 folder = 'sec-imgs'
-get_dir_size(folder)
+# exit if directory is empty
+if get_dir_size(folder):
+    exit = True
+
 
 #creates above folder if it does not exist
 if not os.path.exists(folder):
@@ -120,6 +127,7 @@ def frame_by_frame(current_frame_n):
                 once = True
         if key == ord('/'):
             return current_frame_n
+
 def resize(frame):
     r = 400.0 / frame.shape[1]
     dim = (400 , int(frame.shape[0] * r))
@@ -129,7 +137,9 @@ def resize(frame):
 
 
 def main():
-    global frame_selected, imgs_list, new_frame_from_slider, switch, frame_speed
+    global frame_selected, imgs_list, new_frame_from_slider, switch, frame_speed, exit
+    if exit:
+        return
 
     # window for slider
     #cv2.namedWindow('Frames-Control')
@@ -144,9 +154,12 @@ def main():
         #print('Frame_selected = {}'.format(frame_selected))
 
         for n_current_frame,i in enumerate(imgs_list[frame_selected:]):
+            # reverts back to original with same frame
+            if n_current_frame < frame_selected:
+                continue
            # Outputs frame to terminal
             #print("Curr: {} Sel: {}".format(n_current_frame, frame_selected))
-            print("Frame:{} ".format(n_current_frame+frame_selected))
+            #print("Frame:{} ".format(n_current_frame))
 
             # skips first empty file
             if i == '':
@@ -194,8 +207,10 @@ def main():
             if key == ord('.'):
                 #frame_selected = frame_by_frame(frame_selected)
                 # goes into a loop that pauses frames
+                print(frame_selected)
+                print("current",n_current_frame)
                 frame_selected = frame_by_frame(n_current_frame)
-                break
+                print(frame_selected, n_current_frame)
             # skips by 100 frames
             if key == ord('='):
                 frame_selected += 100 

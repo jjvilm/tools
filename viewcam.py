@@ -68,24 +68,59 @@ class Camara_obj(object):
 
                     #print(i.shape)
 
-                    if self.cam_name == 'House':
-                        # flipping image
-                        rows, cols,_ = i.shape
-                        M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
-                        dst = cv2.warpAffine(i, M, (cols, rows))
-                        #cv2.imshow(hoststr,dst)
-                        i = dst
-                        # flipping image
-
+#                    if self.cam_name == 'House':
+#                        # flipping image
+#                        rows, cols,_ = i.shape
+#                        M = cv2.getRotationMatrix2D((cols/2,rows/2),90,1)
+#                        dst = cv2.warpAffine(i, M, (cols, rows))
+#                        #cv2.imshow(hoststr,dst)
+#                        i = dst
+#
 #                    with self.turn_lock:
 #                        cv2.imshow(self.cam_name,i)
 #                        counter_for_frames += 1
 #                        end_time = datetime.datetime.now().strftime('%s')
 
                     # crop top 
-                    i = i[16::,:] # crop from x,y, w,h 
+#                    i = i[25::,:] # crop from x,y, w,h 
                     # resized
-                    i = self.resizeim(i)
+#                    i = self.resizeim(i)
+
+                    #####drawing contours for fun not part of code####
+#                    imgray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
+#                    ret, thresh = cv2.threshold(imgray, 150,255,0)
+#                    _,contours , hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#                    ih,iw,_ = i.shape
+#                    # new image of same size but black
+#                    i = np.zeros((ih,iw,3),np.uint8)
+#
+#                    cv2.drawContours(i, contours, -1, (255,255,255),1)
+
+                    imgray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
+
+                    ih,iw,_ = i.shape
+                    # new image of same size but black
+                    i = np.zeros((ih,iw,3),np.uint8)
+
+                    counts = 100
+                    for _ in xrange(6):
+                        ret, thresh = cv2.threshold(imgray, counts,255,0)
+                        _,contours , hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+                        cv2.drawContours(i, contours, -1, (255,255,255),1)
+                        counts += 25
+                    ##############################################
+                    ###########hsv applied#############
+#                    i = cv2.cvtColor(i, cv2.COLOR_BGR2HSV)
+#                    low = np.array([0,0,106])
+#                    high = np.array([179,255,255])
+#                    mask = cv2.inRange(i, low, high)
+#                    i = mask
+                    ###################################
+                    
+
+
+
                     cv2.imshow(self.cam_name,i)
 
                     key = cv2.waitKey(33) & 0xFF

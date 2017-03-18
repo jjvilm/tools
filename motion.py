@@ -27,6 +27,24 @@ class Cam(object):
         object_process = threading.Thread(target=self.run_motion_detection)
         object_process.start()
 
+    def cvt2Contour(self,i):
+        imgray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
+
+        ih,iw,_ = i.shape
+        # new image of same size but black
+        i = np.zeros((ih,iw,3),np.uint8)
+
+        counts = 100
+        for _ in xrange(6):
+            ret, thresh = cv2.threshold(imgray, counts,255,0)
+            _,contours , hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            cv2.drawContours(i, contours, -1, (255,255,255),1)
+            counts += 25
+        return i
+
+
+
     def cam_connectivity(self):
         global run
         # Checks cam's connection every 5 mins
@@ -90,7 +108,7 @@ class Cam(object):
                         frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
 
                         # crop top text off frame off
-                        frame_cropped = frame[16::,:] # Crop from x, y, w, h -> 100, 200, 300, 400
+                        frame_cropped = frame[25::,:] # Crop from x, y, w, h -> 100, 200, 300, 400
 
                         gray = cv2.cvtColor(frame_cropped, cv2.COLOR_BGR2GRAY)
                         gray = cv2.GaussianBlur(gray, (21, 21), 0)
@@ -115,6 +133,8 @@ class Cam(object):
 
                         if cnts != []:
                             try:
+                                # saves it as a contour image
+                                #frame = self.cvt2Contour(frame)
                                 #cv2.imwrite(self.folder+'/{}/{}.png'.format(self.cam_name, datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
                                 cv2.imwrite(self.folder+'/{}.png'.format(datetime.datetime.now().strftime("%H:%M:%S:%f-%F")), frame)
                                 #print('saved')
@@ -138,6 +158,8 @@ def stop_threads():
     x = raw_input("Press ENTER to stop\n\n")
     run = False
     print("STOPING ALL THREADS!")
+
+
 
 # asks to press enter to stop threads
 stop_thread = threading.Thread(target=stop_threads)
