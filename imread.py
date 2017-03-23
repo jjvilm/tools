@@ -6,27 +6,44 @@ import commands
 
 # switch to iterate to equal frame n 
 switch = False
-# Global variable to control speed of frames
+#  controls speed of frames
 frame_speed = 0.30 # .3 normilizes time
 # global variable for max frames
 t_n_frames = 0
 # exit switch for empty directory
 exit_switch = False
 
+# returns true if empty
 def get_dir_size(start_path):
     global t_n_frames
     total_size = 0
     counter = 0 
+
     for dirpath, dirnames, filenames in os.walk(start_path):
         for f in filenames:
             fp = os.path.join(dirpath, f)
             total_size += os.path.getsize(fp)
             counter += 1
-    t_n_frames = counter - 1
-    print("Size of directory: {:.2f}MB\nFrames: {}\n".format((total_size/1024.0)/1024.0, t_n_frames))
-    raw_input()
+
     if total_size <= 0:
+        print("Folder empty!")
         return True
+
+    t_n_frames = counter - 1
+
+    folder_size_in_mb = (total_size/1024.0)/1024.0
+    folder_size_in_gb = ((total_size/1024.0)/1024.0) /1024.0
+    
+
+    # gb
+    if folder_size_in_mb >= 1024.0:
+        print("Size of directory: {:.2f}GB\nFrames: {}\n".format(folder_size_in_gb, t_n_frames))
+    # MB
+    else:
+        print("Size of directory: {:.2f}MB\nFrames: {}\n".format(folder_size_in_mb, t_n_frames))
+
+    raw_input()
+
     return False
 
 #folder_name = raw_input('Folder name: ')

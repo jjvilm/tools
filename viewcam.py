@@ -96,19 +96,20 @@ class Camara_obj(object):
 #
 #                    cv2.drawContours(i, contours, -1, (255,255,255),1)
 
-                    imgray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
+#                    imgray = cv2.cvtColor(i, cv2.COLOR_BGR2GRAY)
+#
+#                    ih,iw,_ = i.shape
+#                    # new image of same size but black
+#                    i = np.zeros((ih,iw,3),np.uint8)
 
-                    ih,iw,_ = i.shape
-                    # new image of same size but black
-                    i = np.zeros((ih,iw,3),np.uint8)
-
-                    counts = 100
-                    for _ in xrange(6):
-                        ret, thresh = cv2.threshold(imgray, counts,255,0)
-                        _,contours , hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-                        cv2.drawContours(i, contours, -1, (255,255,255),1)
-                        counts += 25
+                    # contours drawn by number of iterations
+#                    counts = 100
+#                    for _ in xrange(6):
+#                        ret, thresh = cv2.threshold(imgray, counts,255,0)
+#                        _,contours , hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#
+#                        cv2.drawContours(i, contours, -1, (255,255,255),1)
+#                        counts += 25
                     ##############################################
                     ###########hsv applied#############
 #                    i = cv2.cvtColor(i, cv2.COLOR_BGR2HSV)
