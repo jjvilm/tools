@@ -6,7 +6,7 @@ import urllib2
 import numpy as np
 import sys
 
-host = "192.168.1.141:8080"
+host = "192.168.1.122:8080"
 if len(sys.argv)>1:
     host = sys.argv[1]
 
