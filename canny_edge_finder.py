@@ -22,6 +22,7 @@ class App:
     
     def __init__(self, master):
         self.img_path = None
+        self.continuous_grab_switch = True
         frame = tk.Frame(master)
         frame.grid()
         root.title("Sliders")
@@ -29,11 +30,14 @@ class App:
         self.hue_lbl = tk.Label(text="Threshold Values", fg='red')
         self.hue_lbl.grid(row=2)
 
-        self.low_hue = tk.Scale(master, label='Low',from_=0, to=1000, length=1000,orient=tk.HORIZONTAL, command=self.show_changes)
+        self.low_hue = tk.Scale(master, label='Low',from_=0, to=1000,
+                                length=100,orient=tk.HORIZONTAL, command=self.show_changes)
+        self.low_hue.set(200)
         self.low_hue.grid(row=3)
 
-        self.high_hue = tk.Scale(master,label='High', from_=0, to=1000, length=1000,orient=tk.HORIZONTAL, command=self.show_changes)
-        self.high_hue.set(179)
+        self.high_hue = tk.Scale(master,label='High', from_=0, to=1000,
+                                length=100,orient=tk.HORIZONTAL, command=self.show_changes)
+        self.high_hue.set(300)
         self.high_hue.grid(row=4)
 
 ###########################################################################################################
@@ -52,6 +56,9 @@ class App:
         # print mask array
         self.print_mask_array_btn = tk.Button(text="Print Array", command=self.print_img_array)
         self.print_mask_array_btn.grid(row=9, column=1)
+
+        self.continuous_grab_btn = tk.Button(text="Con Grab", command=self.continuous_grab)
+        self.continuous_grab_btn.grid(row=10, column=1)
 ###########################################################################################################
         # timer label
         self.screenshot_timer_lbl = tk.Label(text="Timer", fg='Red')
@@ -163,7 +170,6 @@ class App:
         
 
         #creates the mask and result
-        print("{} {}".format(self.low_hue.get(), self.high_hue.get()))
         low_val = self.low_hue.get()
         high_val = self.high_hue.get()
         mask = cv2.Canny(self.hsv_image, low_val, high_val)
@@ -209,6 +215,15 @@ class App:
         else:
             return 0
 
+    def continuous_grab(self):
+        if self.continuous_grab_switch:
+            continuous_grabbing = Thread(target=self.continous_grabbing)
+            continuous_grabbing.start()
+            self.continuous_grab_switch = False
+
+    def continous_grabbing(self):
+        pass
+        
     def take_screenshot(self,*args):
         global img_screenshot, once
         # switch to stop screenshot button from snaping a shot while snapping a shot

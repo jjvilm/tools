@@ -5,91 +5,65 @@ import pickle
 import cv2
 import commands
 
-#os.chdir('/run/user/1000/gvfs/')
-#os.chdir('/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Juan/')
-#home_path = os.getcwd()
+# os.chdir('/run/user/1000/gvfs/')
+# os.chdir('/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Juan/')
+# home_path = os.getcwd()
 
-#home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Juan/'
-home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Tavo/Desktop/'
+# home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Juan/'
+home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Rachel'
+#home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Rachel//IPad photos from Raquel l/'
+# home_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Rachel/'
 
-sort_year = 'music'
-target_path = '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Tavo/{}/'.format(sort_year)
+SORT_YEAR = '2012'
+
+years_with_pics = {}
+current_directory_names = []
+# mv_to_target_path =
+# '/run/user/1000/gvfs/smb-share:server=192.168.0.1,share=root/Tavo/{}/'.format(SORT_YEAR)
+
+# Index slice to find the year
+year_s = 35
+year_e = 39
+
 
 def mkdir_if_unavailable():
-    years = []
-    for (dirpath, dirnames, filenames) in os.walk(home_path):
-        #pass
-        #print(dirpath)
-        for filename in filenames:
-            #print(filename)
-            # makes a list of date of year from filename
-            years.append(filename[4:8])
+    global current_directory_names
+    os.chdir(home_path)
+    print("Checking These directory names:\n{}\n".format(years_with_pics.keys()))
+
+    for year in years_with_pics.keys():
+        if check_dir(str(year)):
+            print('directory found for {}'.format(year))
+        else:
+            print("Making directory {}".format(year))
+            os.mkdir(str(year))
 
 
-    # finds unique dates 
-    unique = reduce(lambda l, x: l if x in l else l+[x], years, [])
-    uniques = []
+def check_dir(directory_name):
+    # collects dirnames
+    if current_directory_names == []:
+        print("Gathering Direcotry names first...")
+        for (dirpath, dirnames, filenames) in os.walk(home_path):
+            for dirname in dirnames:
+                current_directory_names.append(dirname)
+    # Matched directory name
+    for dirname in current_directory_names:
+        if directory_name == dirname:
+            return 1
+        else:
+            continue
 
-    for element in unique:
-        if '201' in element[:3]:
-            uniques.append(element[:4])
-    cwd = os.getcwd()
-
-    for dirpath, dirnames, filenames in os.walk(cwd):
-        for dirname in dirnames:
-            for element in uniques:
-                if element == dirname:
-                    print('yes')
-                    continue
-                else:
-                    try:
-                        os.mkdir(element)
-                    except Exception as e:
-                        continue
-
-#def move_files():
-#    cwd = os.getcwd()
-#    subdir = '/pictures'
-#    os.chdir(cwd+subdir)
-#    for (dirpath, dirnames, filenames) in os.walk(os.getcwd()):
-#        for dirname in dirnames:
-#            for (dirpath, dirnames, filenames) in os.walk(os.getcwd()):
-#                for filename in filenames:
-#                    print(filename)
-#                    time.sleep(.1)
-#            print(dirname)
-#        for filename in filenames:
-#            #print("_____\n{}\n{}\n{}\n_____\n".format(dirpath, dirnames,filename))
-#            # check ****2000*** date
-#            file_format = filename[-3:]
-#            if file_format == '3gp':
-#                file_path = os.getcwd()+"/"+filename
-#                new_path = home_path+"/cell videos/"+filename
-#                print(file_path)
-#                #print(new_path)
-#                #os.rename(file_path, new_path)
-#                time.sleep(1)
-#            else:
-#                continue
-                
-def check_dir(this_dir):
-    for (dirpath, dirnames, filenames) in os.walk(home_path):
-        for dirname in dirnames:
-            #print(this_dir, dirname)
-            if this_dir == dirname:
-                return 1
-            else:
-                continue
 
 def collect_files(dir_path):
-    def read_and_save_collection(save = 0):
-        ### container list for paths
+    def read_and_save_collection(save=0):
+        # container list for paths
         file_paths_collection = []
+        # collects file names
         for (dirpath, dirnames, filenames) in os.walk(dir_path):
             for filename in filenames:
                 # add filepath to collection
-                file_paths_collection.append(dirpath+"/"+filename)
-        ### Saving list
+                file_paths_collection.append(dirpath + "/" + filename)
+        # Saving list
         if save:
             with open('/home/jj/file_collection.pickle', 'w') as f:
                 pickle.dump(file_paths_collection, f)
@@ -104,33 +78,25 @@ def collect_files(dir_path):
         try:
             for filepath in filepath_list:
                 file_format_slice_index = filepath.rfind('.')
-                found_file_format = filepath[file_format_slice_index+1:]
+                found_file_format = filepath[file_format_slice_index + 1:]
                 if file_format == found_file_format:
                     counter += 1
                     filepaths_w_format.append(filepath)
-                    #print(filepath)
-            print("Files found by format [{}]: {}".format(file_format,counter))
+            print("Files found by format [{}]: {}".format(file_format, counter))
             return filepaths_w_format
         except Exception as e:
             print(filepath)
             print(e)
 
     def load_pickled_file_paths(file_collection_path):
-#        with open('/home/jj/file_collection.pickle', 'r') as f:
-#            pickled_object = pickle.load(f)
-#            print(pickled_object)
         with open(file_collection_path, 'r') as f:
             pickled_object = pickle.load(f)
-            #print(pickled_object)
-
         return pickled_object
 
     def show_images(file_paths_list):
         for img_path in file_paths_list:
             img = cv2.imread(img_path)
-            ### turn to OpenCV format
-            #img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-            cv2.imshow('frame',img)
+            cv2.imshow('frame', img)
             cv2.waitKey(0)
         cv2.destroyAllWindows()
 
@@ -138,11 +104,11 @@ def collect_files(dir_path):
         def sort_by_creation():
             sorted_list = []
             for file_path in iter_list:
-                ### slices off file name, leaves dir path
+                # slices off file name, leaves dir path
                 dir_index = file_path.rfind("/")
-                dir_path = file_path[:dir_index+1]
-                
-                ### cd into working dir
+                dir_path = file_path[:dir_index + 1]
+
+                # cd into working dir
                 if os.getcwd() != dir_path:
                     os.chdir(dir_path)
                 sorted_list.append(commands.getstatusoutput("ls -ltr | awk '{print $9}'"))
@@ -158,20 +124,25 @@ def collect_files(dir_path):
             file_names_by_year = []
             for line_status in ls_output:
                 line_status = str(line_status)
-                file_year = line_status[35:39]
+                file_year = line_status[year_s:year_e]
                 file_name = line_status.rfind(" ") + 1
                 file_name = line_status[file_name:]
-                if sort_year == file_year:
-                    file_names_by_year.append(home_path+file_name)
+                try:
+                    if int(sort_year) == int(file_year):
+                        # print('year Found!')
+                        file_names_by_year.append(home_path + file_name)
+                    else:
+                        # print('Year {} not in:{}'.format(sort_year,line_status))
+                        pass
+                except:
+                    # print("Not a Number:{}".format(file_year))
+                    continue
 
-            print("Files found by year [{}]: {}".format(sort_year,len(file_names_by_year)))
+            print("Files found by year [{}]: {}".format(sort_year, len(file_names_by_year)))
             return file_names_by_year
-            
-
-
 
         return sort_by_year(sort_year)
-            
+
     def mv_files(filepaths_list, mv_to_path):
         if filepaths_list == []:
             return
@@ -182,8 +153,9 @@ def collect_files(dir_path):
             try:
                 slash_index = file_path.rfind("/") + 1
                 file_name = file_path[slash_index:]
-                #print("src:{}\ndest:{}\n".format(file_path, mv_to_path+file_name))
-                os.rename(file_path, mv_to_path+file_name)
+
+                # print("src:{}\ndest:{}\n".format(file_path, mv_to_path + file_name))
+                os.rename(file_path, mv_to_path + file_name)
                 move_counter += 1
             except Exception as e:
                 print(e)
@@ -191,23 +163,54 @@ def collect_files(dir_path):
         else:
             print("Moved [{}] files".format(move_counter))
 
+    def find_years_range(sorted_list, start_year, end_year):
+        global years_with_pics, current_directory_names
 
-    file_paths_list = read_and_save_collection(0)
-
-    #file_paths_list = load_pickled_file_paths('/home/jj/file_collection.pickle')
-
-    specified_format_list = get_file_format('mp3', file_paths_list)
-
-    #sorted_by_year_list = sort_list(file_paths_list, sort_year)
-
-    mv_files(specified_format_list,target_path)
-    #mv_files(sorted_by_year_list, target_path)
-
-
-#    show_images(specified_format_list)
+        for i in xrange(end_year - start_year + 1):
+            sorted_by_cur_year = sort_list(sorted_list, start_year)
+            if len(sorted_by_cur_year) > 0:
+                years_with_pics[start_year] = sorted_by_cur_year
+            # print("Year:{} Found:{}".format(start_year, len(sorted_by_cur_year)))
+            start_year += 1
+        current_directory_names = years_with_pics.keys()
 
 
+    # collects file paths, saves list or not
+    file_paths_list = read_and_save_collection(1)
+
+    # loads saved file paths list
+    file_paths_list = load_pickled_file_paths('/home/jj/file_collection.pickle')
+
+    # collect files based on format
+    specified_format_list = get_file_format('PNG', file_paths_list)
+
+#   for line in specified_format_list:
+#       #print(line)
+#       dot_i = line.rfind('.') 
+#       b_slash = line.rfind('/') + 1
+#       file_name = line[b_slash:]
+#       file_format = line[dot_i:]
+#       new_name = line[:dot_i] + '.png'
+#       os.rename(line, new_name)
+
+#   sorted_by_year_list = sort_list(file_paths_list, SORT_YEAR)
+#   sorted_by_year_list = sort_list(specified_format_list, SORT_YEAR)
+#   find_years_range(specified_format_list, 2008, 2017)
 
 
-#move_files()
+#   mv_files(specified_format_list,mv_to_target_path)
+#   mv_files(sorted_by_year_list, mv_to_target_path)
+
+
+
+#   show_images(specified_format_list)
+    # moves files to its specified directory
+    # based on a dictionary containg dirs with a list of full file paths
+#   mkdir_if_unavailable()
+#   for key in years_with_pics.keys():
+#       mv_files(years_with_pics[key], home_path + str(key) + "/")
+
+
+# move_files()
 collect_files(home_path)
+
