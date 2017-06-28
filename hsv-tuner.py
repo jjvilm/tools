@@ -1,9 +1,9 @@
 #!/usr/bin/python2
 #from Tkinter import *
-import Tkinter as tk
+import tkinter as tk
 from PIL import Image
 from PIL import ImageTk
-import tkFileDialog
+from tkinter import filedialog
 import time
 import cv2
 import numpy as np
@@ -60,8 +60,8 @@ class App:
 
 ###########################################################################################################
 # buttons
-        self.reset_btn = tk.Button(text='Reset', command=self.reset_values)
-        self.reset_btn.grid(row=1,column=1)
+        #self.reset_btn = tk.Button(text='Reset', command=self.reset_values)
+        #self.reset_btn.grid(row=1,column=1)
 
         self.print_btn = tk.Button(text='Print', command=self.print_values)
         self.print_btn.grid(row=2, column=1)
@@ -83,8 +83,8 @@ class App:
         self.screenshot_btn = tk.Button(text="Screenshot", command=self.screenshot_standby)
         self.screenshot_btn.grid(row=7, column=1)
         # print mask array
-        self.print_mask_array_btn = tk.Button(text="Print Array", command=self.print_img_array)
-        self.print_mask_array_btn.grid(row=9, column=1)
+        #self.print_mask_array_btn = tk.Button(text="Print Array", command=self.print_img_array)
+        #self.print_mask_array_btn.grid(row=9, column=1)
 ###########################################################################################################
         # timer label
         self.screenshot_timer_lbl = tk.Label(text="Timer", fg='Red')
@@ -101,7 +101,7 @@ class App:
     def open_file(self):
         global once
         once = True
-        img_file = tkFileDialog.askopenfilename()
+        img_file = filedialog.askopenfilename()
         # this makes sure you select a file
         # otherwise program crashes if not
         if img_file  != '':
@@ -234,15 +234,8 @@ class App:
 
     def print_values(self,*args):
         """Does NOT actually save, just prints, for now"""
-        print('\n')
         print("Low = [{},{},{}]".format(self.low_hue.get(), self.low_sat.get(), self.low_val.get()))
         print("High= [{},{},{}]".format(self.high_hue.get(), self.high_sat.get(), self.high_val.get()))
-        print(self.hsv_img_lbl)
-        print(self.hsv_img_lbl.image)
-        #screen_width = root.winfo_screenwidth()
-        #screen_height = root.winfo_screenheight()
-        #print("Screen width:", screen_width)
-        #print("Screen height:", screen_height)
 
     def screenshot_standby(self,*args):
         if not self.taking_screenshot:
@@ -270,28 +263,38 @@ class App:
         # starts a cound down timer of 3 seconds, parallel to the for loop
         screenshot_timer_thread = Thread(target=self.screenshot_timer_lbl_update)
         screenshot_timer_thread.start()
-        for i in xrange(2):
-            for _ in xrange(3):
+        for i in range(2):
+            for _ in range(3):
                 time.sleep(1)
             # Parses output for x and y coords
-            coords = check_output(['xdotool','getmouselocation','--shell'])
-            fo = coords.find("=")
-            so = coords.find("Y")
-            to = coords.find("S")
-           # sets the first point of screenshot 
-            if i == 0:
-                x1 = int(coords[fo+1:so])
-                y1 = int(coords[so+2:to])
-           # sets the second point of screenshot 
-            else:
-                x2 = int(coords[fo+1:so])
-                y2 = int(coords[so+2:to])
+            coords = str(check_output(['xdotool','getmouselocation','--shell']))
+            x_parsed_index = coords.find("X") + 2
+            first_bslash = coords.find("\\") 
+            y_parsed_index = coords.find("Y") + 2 
+            to = coords.find("S") - 2
+            try:
+               # sets the first point of screenshot 
+                if i == 0:
+                    x1 = int(coords[x_parsed_index:first_bslash])
+                    y1 = int(coords[y_parsed_index:to])
+               # sets the second point of screenshot 
+                else:
+                    x2 = int(coords[x_parsed_index:first_bslash])
+                    y2 = int(coords[y_parsed_index:to])
+
+            except Exception as e:
+                print("ERROR: {}".format(e))
+                print("{}\n".format(coords))
+                print("{}  {}\n".format( coords[x_parsed_index:first_bslash], coords[y_parsed_index:to]))
+                continue
         # screenshot taken here with the grabbed coordinates
         try:
             screenshot = grab(bbox=(x1,y1,x2,y2))
             screenshot = np.array(screenshot)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not capture image")
+            print("...coords passed pt1({},{}) pt2({},{})".format(x1,y1,x2,y2))
             return
         # converts the PIL image format to opencv2 image format
         img_screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
