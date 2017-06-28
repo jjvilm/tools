@@ -1,5 +1,4 @@
-#!/usr/bin/python2
-#from Tkinter import *
+#!/usr/bin/python3
 import tkinter as tk
 from PIL import Image
 from PIL import ImageTk
