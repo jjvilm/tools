@@ -4,9 +4,7 @@ import os
 """ An IPFS object manager with python """
 
 class IpfsHash():
-
     def __init__(self, csv_file="ipfs_hash_objects.csv"):
-        self.running = 1
         self.csv_file = csv_file
         self.named_hash = {}
         self.found_hash = self.find_recursive_hash()
@@ -227,7 +225,7 @@ class IpfsHash():
                         '6':self.exit}
 
             print("""
-            [1] Add Dir
+            [1] Add Files
             [2] Find New IPFS Objects
             [3] Save 
             [4] Backup
