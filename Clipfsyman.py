@@ -13,7 +13,7 @@ class IpfsHash():
 
     def find_recursive_hash(self):
         # recommended way after 3.5 python to run a command in shell, converts bytes output to string 
-        res = subprocess.run(["ipfs", "pin", "ls"], stdout=subprocess.PIPE).stdout.decode('utf-8')
+        res = subprocess.run(["ipfs", "pin", "ls", "-t", "recursive"], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
         # splits it by line to iterate
         res = res.split('\n')
@@ -21,8 +21,7 @@ class IpfsHash():
         recursives = []
         for line in res:
             try:
-                if line[47] == 'r':
-                    recursives.append(line[:46])
+                recursives.append(line[:46])
             except:
                 pass
         # returns iter hashes
@@ -106,8 +105,10 @@ class IpfsHash():
         except Exception as e:
             print(e, "\nIn give_name()")
             
-    def open_hash(self, hash_str, webbrowser='chromium'):
+    def open_hash(self, hash_str='', webbrowser='chromium'):
         """ Opens hash in passed webbrowser, first will try local gateway then ipfs.io """
+        if hash_str == '':
+            hash_str = input("Enter Hash: ")
         print('Opening:\n{}'.format(hash_str))
         try:
             print("opening with local gateway")
@@ -129,13 +130,13 @@ class IpfsHash():
             try:
                 subprocess.run(["ipfs", "pin", "rm", "{}".format(typed_hash)])
                 del self.named_hash[typed_hash]
-                self.saveHash2csv()
+                self.save_hash2csv()
             except Exception as e:
                 print(e)
         else:
             subprocess.run(["ipfs", "pin", "rm", "{}".format(hash_str)])
             del self.named_hash[typed_hash]
-            self.saveHash2csv()
+            self.save_hash2csv()
 
 
 
@@ -145,6 +146,9 @@ class IpfsHash():
         new_ipfshash_counter = 0
         # strip name away to comapre hash
         for hazh in self.found_hash:
+            # skips empty names
+            if hazh == '':
+                continue
             if hazh not in self.named_hash.keys():
                 print("NEW {}".format(hazh))
                 new_ipfshash_name.append(hazh)
@@ -213,24 +217,26 @@ class IpfsHash():
     def main(self):
         """ Intended to be used on a terminal """
         import time
-        os.system('clear')
+        #os.system('clear')
         
         while 1:
             self.display_hash([''])
             method_dic = {'1':self.addDir2ipfs,
                         '2':self.find_new_hash,
-                        '3':self.save_hash2csv,
-                        '4':self.back_up_csv_file,
-                        '5':self.rmPinned,
-                        '6':self.exit}
+                        '3':self.open_hash,
+                        '4':self.save_hash2csv,
+                        '5':self.back_up_csv_file,
+                        '6':self.rmPinned,
+                        '7':self.exit}
 
             print("""
             [1] Add Files
             [2] Find New IPFS Objects
-            [3] Save 
-            [4] Backup
-            [5] remove Hash
-            [6] Exit """)
+            [3] Open in Browser
+            [4] Save 
+            [5] Backup
+            [6] remove Hash
+            [7] Exit """)
 
             answer = input("\nSelect a function:\n")
             try:
